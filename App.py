@@ -44,6 +44,10 @@ def clear():
     f = open(METAFILEPATH,"w")
     f.truncate()
 
+    # 重置 index
+    config.set("download", "index", 0)
+    config.write(open('config.ini', 'w'))
+
 def formatUrl(url):
     # todo
     return url
@@ -65,6 +69,10 @@ def downloadTSFile():
 
             HEADERS["Host"] = "data.video.iqiyi.com"
             res1 = requests.get(line.strip('\n'), headers=HEADERS, allow_redirects=False)
+
+            while("Location" not in res1.headers):
+                time.sleep(1)
+                res1 = requests.get(line, headers=HEADERS, allow_redirects=False)
             locationURL1 = res1.headers["Location"]
 
             matchObj = re.match(r'http://(.*?)/', locationURL1, re.M|re.I)
@@ -91,6 +99,7 @@ def downloadTSFile():
             index = index + 1
             config.set("download", "index", index)
             config.write(open('config.ini', 'w'))
+    pbar.close()
 
 def download(url):
     HEADERS["Host"] = "cache.m.iqiyi.com"
@@ -103,6 +112,6 @@ if __name__ == "__main__":
     if url is "":
         print("请输入链接")
     else:
-        # clear()
-        # download(url)
+        clear()
+        download(url)
         downloadTSFile()
